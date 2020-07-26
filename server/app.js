@@ -18,7 +18,7 @@ const corsOptionsDelegate = function (req, callback) {
   if (whitelist.includes(req.header('Origin'))) {
     corsOptions = {
       origin: true,
-      allowedHeaders: ['Content-Type', 'Authorization', 'Current-Region']
+      allowedHeaders: ['Content-Type', 'Authorization']
     }; // reflect (enable) the requested origin in the CORS response
   } else {
     corsOptions = {
@@ -55,7 +55,8 @@ app.get("/:code", (req, res) => {
 });
 
 app.post("/create-tiny", async (req, res) => {
-	const { url, duration } = req.body;
+  const { url, duration } = req.body;
+  const max = 100;
 	// Check that the url is valid
   if (validUrl.isUri(url)) {
     let safety = 0;
@@ -64,7 +65,7 @@ app.post("/create-tiny", async (req, res) => {
 		// there are no dublicate keys in the db. 
 		// side note: 100 might be a bit excessive, but better
 		// safe than sorry, right...
-    while (safety < 100) {
+    while (safety < max) {
 			// Generate a random string of characters
       const urlCode = shortid.generate();
 			await new Promise((resolve, reject) =>
@@ -97,7 +98,7 @@ app.post("/create-tiny", async (req, res) => {
       safety++;
 		}
 		// It was not possible to find a url code that did not exist in the db already
-    if (safety === 100) {
+    if (safety === max) {
       res.status(409).send("Could not store url code. Please try again");
     }
   } else {
